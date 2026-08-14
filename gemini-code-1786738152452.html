@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Creator Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        header h1 { margin: 0; color: #2c3e50; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .card { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card h2 { margin-top: 0; color: #34495e; font-size: 1.2rem; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+        .chart-container { height: 300px; position: relative; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #3498db; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background-color: #2980b9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Professional Creator Tracker</h1>
+        <p>Monitor your channel performance and growth efficiently.</p>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Performance Overview</h2>
+            <div class="chart-container">
+                <canvas id="viewChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Improvement Metrics</h2>
+            <div class="chart-container">
+                <canvas id="impChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Data Entry</h2>
+            <form id="dataForm">
+                <div class="form-group">
+                    <label for="dateIn">Date</label>
+                    <input type="date" id="dateIn" required>
+                </div>
+                <div class="form-group">
+                    <label for="viewsIn">Views</label>
+                    <input type="number" id="viewsIn" required>
+                </div>
+                <div class="form-group">
+                    <label for="impIn">Improvement (%)</label>
+                    <input type="number" id="impIn" required>
+                </div>
+                <button type="submit">Add Entry</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Logs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Views</th>
+                        <th>Improvement</th>
+                    </tr>
+                </thead>
+                <tbody id="logTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctx1 = document.getElementById('viewChart').getContext('2d');
+    const ctx2 = document.getElementById('impChart').getContext('2d');
+
+    let viewData = { labels: [], datasets: [{ label: 'Views', data: [], borderColor: '#3498db', fill: false }] };
+    let impData = { labels: [], datasets: [{ label: 'Improvement %', data: [], backgroundColor: ['#2ecc71', '#e74c3c'] }] };
+
+    const viewChart = new Chart(ctx1, { type: 'line', data: viewData, options: { responsive: true, maintainAspectRatio: false } });
+    const impChart = new Chart(ctx2, { type: 'doughnut', data: impData, options: { responsive: true, maintainAspectRatio: false } });
+
+    document.getElementById('dataForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('dateIn').value;
+        const views = document.getElementById('viewsIn').value;
+        const imp = document.getElementById('impIn').value;
+
+        viewData.labels.push(date);
+        viewData.datasets[0].data.push(views);
+        viewChart.update();
+
+        impData.labels.push('Improvement');
+        impData.labels.push('Quit Rate');
+        impData.datasets[0].data.push(imp);
+        impData.datasets[0].data.push(100 - imp);
+        impChart.update();
+
+        const table = document.getElementById('logTable');
+        const row = table.insertRow(0);
+        row.insertCell(0).innerHTML = date;
+        row.insertCell(1).innerHTML = views;
+        row.insertCell(2).innerHTML = imp + '%';
+
+        this.reset();
+    });
+</script>
+
+</body>
+</html>
