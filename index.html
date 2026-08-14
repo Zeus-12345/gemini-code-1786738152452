@@ -2,84 +2,256 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Professional Creator Terminal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Financial & Creator Terminal</title>
+    <!-- Chart.js and Lightweight Charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; }
-        .dashboard { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; max-width: 1200px; margin: auto; }
-        .card { background: #161b22; padding: 20px; border-radius: 12px; border: 1px solid #30363d; }
-        h2 { color: #58a6ff; margin-top: 0; }
-        .chart-wrapper { height: 400px; }
-        input { background: #0d1117; border: 1px solid #30363d; color: white; padding: 10px; width: 100%; margin: 5px 0; border-radius: 5px; }
-        button { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: #151821;
+            --border-color: #2a2e39;
+            --text-color: #d1d4dc;
+            --accent-green: #26a69a;
+            --accent-red: #ef5350;
+            --accent-blue: #2962ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 2.5fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #8f939d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #tradingview-chart {
+            height: 400px;
+            width: 100%;
+        }
+
+        .progress-wrapper {
+            position: relative;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: #8f939d;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            background: #0b0e14;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            grid-column: span 4;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #1e54e4;
+        }
+
+        @media (max-width: 900px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr 1fr; }
+            .btn-submit { grid-column: span 2; }
+        }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
-    <!-- Trading Chart Section -->
+<div class="header">
+    <h1>Trading & Performance Dashboard</h1>
+    <span style="color: var(--accent-green);">● Live Terminal</span>
+</div>
+
+<div class="grid-layout">
+    <!-- Real Candlestick Chart -->
     <div class="card">
-        <h2>Market Trend (Trading View)</h2>
-        <div class="chart-wrapper">
-            <canvas id="tradingChart"></canvas>
+        <h2>Market Candlestick Trend</h2>
+        <div id="tradingview-chart"></div>
+    </div>
+
+    <!-- Professional Donut Progress Chart -->
+    <div class="card">
+        <h2>Overall Improvement Score</h2>
+        <div class="progress-wrapper">
+            <canvas id="donutChart"></canvas>
         </div>
     </div>
 
-    <!-- Progress Tracker -->
-    <div class="card">
-        <h2>Improvement Score</h2>
-        <div class="chart-wrapper">
-            <canvas id="progressChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Data Input -->
-    <div class="card">
-        <h2>Enter Data</h2>
-        <input type="number" id="valIn" placeholder="Enter Performance Value (e.g., 500)">
-        <button onclick="addData()">Submit Trade</button>
+    <!-- Data Input Controls -->
+    <div class="card" style="grid-column: span 2;">
+        <h2>Add Candle Data (OHLC)</h2>
+        <form id="tradeForm" class="form-grid">
+            <div class="input-group">
+                <label>OPEN VALUE</label>
+                <input type="number" id="openVal" value="100" required>
+            </div>
+            <div class="input-group">
+                <label>HIGH VALUE</label>
+                <input type="number" id="highVal" value="150" required>
+            </div>
+            <div class="input-group">
+                <label>LOW VALUE</label>
+                <input type="number" id="lowVal" value="80" required>
+            </div>
+            <div class="input-group">
+                <label>CLOSE VALUE</label>
+                <input type="number" id="closeVal" value="130" required>
+            </div>
+            <button type="submit" class="btn-submit">Add Candle to Chart</button>
+        </form>
     </div>
 </div>
 
 <script>
-    // Variables for Chart
-    let chartData = [];
-    let labels = [];
-
-    const ctx = document.getElementById('tradingChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'bar',
-        data: { labels: labels, datasets: [{ label: 'Performance', data: chartData, backgroundColor: [] }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    // 1. Initialize TradingView Lightweight Chart
+    const chartContainer = document.getElementById('tradingview-chart');
+    const chart = LightweightCharts.createChart(chartContainer, {
+        layout: {
+            backgroundColor: '#151821',
+            textColor: '#d1d4dc',
+        },
+        grid: {
+            vertLines: { color: '#2a2e39' },
+            horzLines: { color: '#2a2e39' },
+        },
+        timeScale: {
+            timeVisible: true,
+            secondsVisible: false,
+        },
     });
 
-    const progCtx = document.getElementById('progressChart').getContext('2d');
-    const progChart = new Chart(progCtx, {
+    const candlestickSeries = chart.addCandlestickSeries({
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+        borderVisible: false,
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+    });
+
+    // Sample initial data
+    let currentDate = new Date(2026, 0, 1);
+    let chartData = [
+        { time: '2026-01-01', open: 100, high: 140, low: 90, close: 120 },
+        { time: '2026-01-02', open: 120, high: 160, low: 110, close: 150 },
+        { time: '2026-01-03', open: 150, high: 155, low: 100, close: 105 },
+    ];
+    candlestickSeries.setData(chartData);
+
+    // 2. Initialize Donut Chart
+    const donutCtx = document.getElementById('donutChart').getContext('2d');
+    const donutChart = new Chart(donutCtx, {
         type: 'doughnut',
-        data: { labels: ['Improved', 'Lagging'], datasets: [{ data: [0, 100], backgroundColor: ['#238636', '#da3633'] }] }
+        data: {
+            labels: ['Success / Improvement', 'Remaining Target'],
+            datasets: [{
+                data: [65, 35],
+                backgroundColor: ['#26a69a', '#ef5350'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#d1d4dc', font: { size: 12 } }
+                }
+            },
+            cutout: '70%'
+        }
     });
 
-    function addData() {
-        const val = parseFloat(document.getElementById('valIn').value);
-        if (isNaN(val)) return;
+    // 3. Form Handling
+    document.getElementById('tradeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+        const dateStr = currentDate.toISOString().split('T')[0];
 
-        labels.push(labels.length + 1);
-        chartData.push(val);
+        const open = parseFloat(document.getElementById('openVal').value);
+        const high = parseFloat(document.getElementById('highVal').value);
+        const low = parseFloat(document.getElementById('lowVal').value);
+        const close = parseFloat(document.getElementById('closeVal').value);
 
-        // Trading Logic: If val > prev, Green (238636), else Red (da3633)
-        let colors = chartData.map((v, i) => {
-            if (i === 0) return '#58a6ff';
-            return v >= chartData[i - 1] ? '#238636' : '#da3633';
-        });
+        const newCandle = { time: dateStr, open, high, low, close };
+        chartData.push(newCandle);
+        candlestickSeries.update(newCandle);
 
-        chart.data.datasets[0].backgroundColor = colors;
-        chart.update();
-
-        // Update Progress Doughnut
-        let score = (val / 1000) * 100; // Assuming 1000 is target
-        progChart.data.datasets[0].data = [score, 100 - score];
-        progChart.update();
-    }
+        // Update Progress Donut dynamically
+        const progressVal = Math.min(100, Math.max(0, (close / high) * 100));
+        donutChart.data.datasets[0].data = [progressVal, 100 - progressVal];
+        donutChart.update();
+    });
 </script>
 </body>
 </html>
