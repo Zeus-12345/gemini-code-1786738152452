@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creator Video Performance Terminal</title>
-    <!-- Chart.js and Lightweight Charts -->
+    <title>Video Analytics Terminal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -21,7 +19,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
         }
@@ -30,20 +28,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 20px;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #fff;
-        }
-
         .grid-layout {
             display: grid;
-            grid-template-columns: 2.5fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: 20px;
         }
 
@@ -54,38 +46,22 @@
             padding: 20px;
         }
 
-        .card h2 {
-            font-size: 1rem;
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #8f939d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        #tradingview-chart {
-            height: 400px;
-            width: 100%;
-        }
-
-        .progress-wrapper {
+        .chart-box {
             position: relative;
-            height: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            height: 350px;
+            width: 100%;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .input-group label {
             display: block;
-            font-size: 0.75rem;
+            font-size: 11px;
             color: #8f939d;
             margin-bottom: 5px;
         }
@@ -116,7 +92,7 @@
             background-color: #1e54e4;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 800px) {
             .grid-layout { grid-template-columns: 1fr; }
             .form-grid { grid-template-columns: 1fr 1fr; }
             .btn-submit { grid-column: span 2; }
@@ -126,95 +102,107 @@
 <body>
 
 <div class="header">
-    <h1>Video Performance Terminal</h1>
+    <h2 style="margin:0; color:#fff;">Video Performance Terminal</h2>
     <span style="color: var(--accent-green);">● Active System</span>
 </div>
 
 <div class="grid-layout">
-    <!-- Real Candlestick Chart -->
+    <!-- Candle Performance Chart -->
     <div class="card">
-        <h2>Video Performance Trend (Candlesticks)</h2>
-        <div id="tradingview-chart"></div>
+        <h3 style="margin-top:0; color:#8f939d; font-size: 14px;">VIDEO VIEWS CANDLESTICK CHART</h3>
+        <div class="chart-box">
+            <canvas id="candleChart"></canvas>
+        </div>
     </div>
 
-    <!-- Professional Donut Progress Chart -->
+    <!-- Success Progress Indicator -->
     <div class="card">
-        <h2>Success Target Indicator</h2>
-        <div class="progress-wrapper">
+        <h3 style="margin-top:0; color:#8f939d; font-size: 14px;">SUCCESS SCORE (%)</h3>
+        <div class="chart-box">
             <canvas id="donutChart"></canvas>
         </div>
     </div>
 
-    <!-- Data Input Controls -->
+    <!-- Input Form -->
     <div class="card" style="grid-column: span 2;">
-        <h2>Add New Video Metrics</h2>
+        <h3 style="margin-top:0; color:#8f939d; font-size: 14px;">ENTER VIDEO METRICS (OHLC)</h3>
         <div class="form-grid">
             <div class="input-group">
-                <label>OPEN VALUE (Initial Views)</label>
-                <input type="number" id="openVal" placeholder="e.g. 200">
+                <label>OPEN (1st Hour Views)</label>
+                <input type="number" id="openVal" placeholder="e.g. 100">
             </div>
             <div class="input-group">
-                <label>HIGH VALUE (Peak Views Spikes)</label>
-                <input type="number" id="highVal" placeholder="e.g. 1200">
+                <label>HIGH (Peak Spike Views)</label>
+                <input type="number" id="highVal" placeholder="e.g. 500">
             </div>
             <div class="input-group">
-                <label>LOW VALUE (Minimum Target)</label>
-                <input type="number" id="lowVal" placeholder="e.g. 150">
+                <label>LOW (Minimum Base Views)</label>
+                <input type="number" id="lowVal" placeholder="e.g. 80">
             </div>
             <div class="input-group">
-                <label>CLOSE VALUE (24h Final Views)</label>
-                <input type="number" id="closeVal" placeholder="e.g. 1000">
+                <label>CLOSE (24h Total Views)</label>
+                <input type="number" id="closeVal" placeholder="e.g. 450">
             </div>
-            <button type="button" class="btn-submit" onclick="addVideoCandle()">Add Candle to Chart</button>
+            <button class="btn-submit" onclick="addCandleData()">Add Candle to Chart</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. Initialize Chart
-    const chartContainer = document.getElementById('tradingview-chart');
-    const chart = LightweightCharts.createChart(chartContainer, {
-        layout: {
-            backgroundColor: '#151821',
-            textColor: '#d1d4dc',
+    let labels = ['Video 1', 'Video 2'];
+    let candleRanges = [[80, 500], [150, 600]]; // [Low, High]
+    let candleBodies = [[100, 450], [200, 350]]; // [Open, Close]
+    let colors = ['#26a69a', '#ef5350']; // Green if Close > Open, Red if Close < Open
+
+    // Initialize Main Candlestick Chart
+    const ctx = document.getElementById('candleChart').getContext('2d');
+    const candleChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'High/Low Range',
+                    data: candleRanges,
+                    backgroundColor: '#58a6ff',
+                    barThickness: 3,
+                },
+                {
+                    label: 'Open/Close Body',
+                    data: candleBodies,
+                    backgroundColor: colors,
+                    barThickness: 20,
+                }
+            ]
         },
-        grid: {
-            vertLines: { color: '#2a2e39' },
-            horzLines: { color: '#2a2e39' },
-        },
-        timeScale: {
-            timeVisible: true,
-            secondsVisible: false,
-        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#2a2e39' },
+                    ticks: { color: '#d1d4dc' }
+                },
+                x: {
+                    grid: { color: '#2a2e39' },
+                    ticks: { color: '#d1d4dc' }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
     });
 
-    const candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderVisible: false,
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
-    });
-
-    // Days Counter for Chart Timeline
-    let currentDay = 1;
-
-    // Initial Data
-    let initialData = [
-        { time: '2026-01-01', open: 100, high: 250, low: 80, close: 200 },
-        { time: '2026-01-02', open: 200, high: 400, low: 180, close: 350 }
-    ];
-    candlestickSeries.setData(initialData);
-    currentDay = 3;
-
-    // 2. Initialize Donut Chart
+    // Initialize Donut Chart
     const donutCtx = document.getElementById('donutChart').getContext('2d');
     const donutChart = new Chart(donutCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Success Score', 'Remaining Target'],
+            labels: ['Success', 'Lagging'],
             datasets: [{
-                data: [60, 40],
+                data: [75, 25],
                 backgroundColor: ['#26a69a', '#ef5350'],
                 borderWidth: 0
             }]
@@ -229,36 +217,42 @@
         }
     });
 
-    // 3. Custom Function to Add Candle
-    function addVideoCandle() {
+    // Add Candle Function
+    function addCandleData() {
         const open = parseFloat(document.getElementById('openVal').value);
         const high = parseFloat(document.getElementById('highVal').value);
         const low = parseFloat(document.getElementById('lowVal').value);
         const close = parseFloat(document.getElementById('closeVal').value);
 
         if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
-            alert('بارہ کرم چاروں خانے (Open, High, Low, Close) صحیح نمبر سے بھریں!');
+            alert('براہ کرم چاروں خانوں میں صحیح نمبر درج کریں!');
             return;
         }
 
-        // Generate dynamic date string
-        let dayString = currentDay < 10 ? '0' + currentDay : currentDay;
-        let timeString = `2026-01-${dayString}`;
-        currentDay++;
+        // Add Label
+        const nextVideoIndex = labels.length + 1;
+        labels.push('Video ' + nextVideoIndex);
 
-        const newCandle = { time: timeString, open, high, low, close };
-        
-        // Update Trading Chart
-        candlestickSeries.update(newCandle);
+        // Add Range & Body Data
+        candleRanges.push([low, high]);
+        candleBodies.push([open, close]);
 
-        // Update Progress Donut Chart
-        let performancePercentage = Math.round((close / high) * 100);
-        if (performancePercentage > 100) performancePercentage = 100;
+        // Color logic: Green for profit/growth, Red for drop
+        if (close >= open) {
+            colors.push('#26a69a'); // Green
+        } else {
+            colors.push('#ef5350'); // Red
+        }
 
-        donutChart.data.datasets[0].data = [performancePercentage, 100 - performancePercentage];
+        // Update Charts
+        candleChart.update();
+
+        // Update Donut Progress
+        let score = Math.min(100, Math.round((close / high) * 100));
+        donutChart.data.datasets[0].data = [score, 100 - score];
         donutChart.update();
 
-        // Clear input boxes
+        // Clear Inputs
         document.getElementById('openVal').value = '';
         document.getElementById('highVal').value = '';
         document.getElementById('lowVal').value = '';
