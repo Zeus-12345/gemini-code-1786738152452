@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Professional Creator Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; }
+        .dashboard { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; max-width: 1200px; margin: auto; }
+        .card { background: #161b22; padding: 20px; border-radius: 12px; border: 1px solid #30363d; }
+        h2 { color: #58a6ff; margin-top: 0; }
+        .chart-wrapper { height: 400px; }
+        input { background: #0d1117; border: 1px solid #30363d; color: white; padding: 10px; width: 100%; margin: 5px 0; border-radius: 5px; }
+        button { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <!-- Trading Chart Section -->
+    <div class="card">
+        <h2>Market Trend (Trading View)</h2>
+        <div class="chart-wrapper">
+            <canvas id="tradingChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Progress Tracker -->
+    <div class="card">
+        <h2>Improvement Score</h2>
+        <div class="chart-wrapper">
+            <canvas id="progressChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Data Input -->
+    <div class="card">
+        <h2>Enter Data</h2>
+        <input type="number" id="valIn" placeholder="Enter Performance Value (e.g., 500)">
+        <button onclick="addData()">Submit Trade</button>
+    </div>
+</div>
+
+<script>
+    // Variables for Chart
+    let chartData = [];
+    let labels = [];
+
+    const ctx = document.getElementById('tradingChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: 'Performance', data: chartData, backgroundColor: [] }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+    });
+
+    const progCtx = document.getElementById('progressChart').getContext('2d');
+    const progChart = new Chart(progCtx, {
+        type: 'doughnut',
+        data: { labels: ['Improved', 'Lagging'], datasets: [{ data: [0, 100], backgroundColor: ['#238636', '#da3633'] }] }
+    });
+
+    function addData() {
+        const val = parseFloat(document.getElementById('valIn').value);
+        if (isNaN(val)) return;
+
+        labels.push(labels.length + 1);
+        chartData.push(val);
+
+        // Trading Logic: If val > prev, Green (238636), else Red (da3633)
+        let colors = chartData.map((v, i) => {
+            if (i === 0) return '#58a6ff';
+            return v >= chartData[i - 1] ? '#238636' : '#da3633';
+        });
+
+        chart.data.datasets[0].backgroundColor = colors;
+        chart.update();
+
+        // Update Progress Doughnut
+        let score = (val / 1000) * 100; // Assuming 1000 is target
+        progChart.data.datasets[0].data = [score, 100 - score];
+        progChart.update();
+    }
+</script>
+</body>
+</html>
